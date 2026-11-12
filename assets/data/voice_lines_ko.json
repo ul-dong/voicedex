@@ -1,0 +1,10 @@
+{
+  "locale": "ko-KR",
+  "lines": {
+    "ask.name_from_color": "이 동물은 누구일까?",
+    "listen.retry": "다시 말해줄래?",
+    "hint.first_syllable": "{hint}...",
+    "correct.say_name": "맞아! {name}!",
+    "stage.clear": "와, 다 맞혔어! 정말 잘했어!"
+  }
+}

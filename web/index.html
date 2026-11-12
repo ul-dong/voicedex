@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <!-- `flutter build web --base-href /voicedex/` 가 아래 값을 바꾼다. -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="말하는 도감 (voicedex) - 내부 테스트용 웹 빌드">
+  <meta name="robots" content="noindex">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="말하는 도감">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>말하는 도감 (웹 테스트)</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    html, body { margin: 0; height: 100%; background: #FFF6E5; }
+  </style>
+</head>
+<body>
+  <script>
+    // 브라우저 TTS 잠금 풀기: iOS 사파리 등은 사용자 제스처 안에서 한 번 말해야 이후 speechSynthesis 소리가 난다.
+    // 첫 탭(시작 화면의 재생 버튼)에서 소리 없는 빈 문장을 한 번 말해 둔다. 글자는 화면에 나오지 않는다.
+    (function () {
+      if (!('speechSynthesis' in window)) return;
+      var unlocked = false;
+      function unlock() {
+        if (unlocked) return;
+        unlocked = true;
+        try {
+          var u = new SpeechSynthesisUtterance(' ');
+          u.volume = 0;
+          u.lang = 'ko-KR';
+          window.speechSynthesis.speak(u);
+        } catch (e) { /* 무시 */ }
+        ['pointerup', 'touchend', 'click', 'keydown'].forEach(function (t) {
+          window.removeEventListener(t, unlock, true);
+        });
+      }
+      ['pointerup', 'touchend', 'click', 'keydown'].forEach(function (t) {
+        window.addEventListener(t, unlock, true);
+      });
+    })();
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
