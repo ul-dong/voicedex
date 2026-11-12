@@ -7,6 +7,7 @@ class Species {
     required this.answers,
     required this.similar,
     required this.hint,
+    required this.featureHint,
     required this.colorImage,
     required this.shadowImage,
   });
@@ -26,8 +27,11 @@ class Species {
   /// 인식기가 비슷하게 받아 적는 유사 발음. 정답과 같이 취급한다.
   final List<String> similar;
 
-  /// 오답일 때 들려줄 첫 음절.
+  /// 앞글자 힌트(두 번째 오답 때 "코..."). 보통 이름 첫 글자, 한 음절 이름은 받침을 뺀 소리(곰 → "고").
   final String hint;
+
+  /// 특징 힌트 한 문장(첫 번째 오답 때). 그림자에서도 보이는 형태 특징. 예: 코끼리 "코가 아주아주 길어!"
+  final String featureHint;
 
   /// 색칠 그림 SVG 에셋 경로.
   final String colorImage;
@@ -48,6 +52,7 @@ class Species {
       answers: strings('answers'),
       similar: strings('similar'),
       hint: json['hint'] as String,
+      featureHint: json['feature_hint'] as String? ?? '',
       colorImage: json['color_image'] as String,
       shadowImage: json['shadow_image'] as String,
     );

@@ -1,11 +1,16 @@
 import 'package:flutter/foundation.dart';
 
+import '../content/species.dart';
+import '../progress/progress_store.dart';
+
 /// 빌드 설정. `--dart-define`으로 바꾼다(README 참고). 디버그 기능은 release 빌드에서 전부 꺼진다.
 ///
 /// 예외: 웹(내부 테스트용) 빌드는 URL 파라미터로 켠다. `?debug=1`이 없으면 꺼져 있다.
 /// - `?debug=1` 개발자 오버레이(켜진 채 시작, 오른쪽 위 길게 눌러 끄기/켜기)
 /// - `?debug=1&fake=1` 가짜 음성 입력(오버레이 버튼)
 /// - `?debug=1&script=none,wrong,correct,...` 가짜 음성 대본(자동 진행)
+/// - `?debug=1&dex=empty|some|mixed|gold` 시작할 때 도감 상태를 강제로 바꿈(저장됨)
+/// - `?debug=1&overlay=0` 개발자 오버레이를 꺼진 채 시작(길게 눌러 켜기)
 class AppConfig {
   AppConfig._();
 
@@ -35,7 +40,26 @@ class AppConfig {
 
   static bool get debugOverlayAvailable => kDebugMode || webDebug;
   static bool get debugOverlayInitiallyOn =>
-      (kDebugMode && _overlayRequested) || webDebug;
+      (kDebugMode && _overlayRequested) ||
+      (webDebug && _webParams['overlay'] != '0');
+
+  /// 도감 상태 강제 프리셋(debug 빌드의 `--dart-define=VOICEDEX_DEX=mixed` 또는 웹 `?debug=1&dex=mixed`).
+  static const String _dexPreset = String.fromEnvironment('VOICEDEX_DEX');
+
+  static String get dexPreset =>
+      webDebug ? (_webParams['dex'] ?? '') : (kDebugMode ? _dexPreset : '');
+
+  /// 프리셋 이름은 [ProgressController.debugPreset] 참고(empty/some/mixed/border/gold).
+  static Future<void> applyDebugDexPreset(
+    ProgressController progress,
+    List<Species> animals,
+  ) async {
+    final preset = dexPreset;
+    if (preset.isEmpty) return;
+    await progress.debugPreset('animals', [
+      for (final s in animals) s.id,
+    ], preset);
+  }
 
   static bool get useFakeSpeech =>
       (kDebugMode && (_fakeRequested || _fakeScript.isNotEmpty)) ||

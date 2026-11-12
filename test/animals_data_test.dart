@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:voicedex/content/line_template.dart';
 import 'package:voicedex/quiz/answer_judge.dart';
 
 import 'test_data.dart';
@@ -43,11 +44,37 @@ void main() {
     }
   });
 
-  test('첫 음절 힌트 = 이름의 첫 글자', () {
+  test('앞글자 힌트 = 이름의 첫 글자, 한 음절 이름은 받침을 뺀 소리(정답을 그대로 말하지 않음)', () {
     for (final s in animals.species) {
-      expect(s.hint, s.name.substring(0, 1), reason: s.id);
+      final first = s.name.substring(0, 1);
+      final expected = s.name.length == 1
+          ? LineTemplate.withoutFinalConsonant(first)
+          : first;
+      expect(s.hint, expected, reason: s.id);
+      expect(s.hint, isNot(s.name), reason: s.id);
     }
     expect(byId(animals, 'elephant').hint, '코');
+    expect(byId(animals, 'bear').hint, '고');
+  });
+
+  test('12종 모두 특징 힌트 한 문장, 이름·정답 후보를 말하지 않음', () {
+    final everyAnswer = [
+      for (final s in animals.species)
+        ...s.acceptable.map(AnswerJudge.normalize),
+    ];
+    for (final s in animals.species) {
+      expect(s.featureHint, isNotEmpty, reason: s.id);
+      expect(s.featureHint, endsWith('!'), reason: s.id);
+      expect(
+        RegExp(r'[.!?]').allMatches(s.featureHint).length,
+        1,
+        reason: s.id,
+      );
+      final n = AnswerJudge.normalize(s.featureHint);
+      for (final a in everyAnswer) {
+        expect(n.contains(a), isFalse, reason: '${s.id}: "$a"');
+      }
+    }
   });
 
   test('곰은 유사 발음 "공"을 포함', () {

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/app_services.dart';
-import '../content/world_catalog.dart';
-import 'quiz_screen.dart';
+import 'home_screen.dart';
 import 'start_screen.dart';
 
 class VoicedexApp extends StatelessWidget {
@@ -30,20 +29,13 @@ class _Home extends StatelessWidget {
 
   final AppServices services;
 
+  /// 시작 화면의 재생 버튼(첫 사용자 제스처): 마이크·음성 인식 권한을 받고 메인 화면으로.
   Future<void> _play(BuildContext context) async {
     await services.ensureSpeech();
-    final world = await services.content.load(WorldCatalog.animals);
     if (!context.mounted) return;
-    await Navigator.of(context).push(
+    await Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
-        pageBuilder: (_, _, _) => QuizScreen(
-          services: services,
-          spec: const StageSpec(
-            world: WorldCatalog.animals,
-            kind: StageKind.nameFromColor,
-          ),
-          pool: world.species,
-        ),
+        pageBuilder: (_, _, _) => HomeScreen(services: services),
         transitionsBuilder: (_, a, _, child) =>
             FadeTransition(opacity: a, child: child),
       ),

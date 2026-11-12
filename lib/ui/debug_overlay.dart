@@ -47,7 +47,8 @@ class DebugOverlay extends StatelessWidget {
                     Text('[DEBUG] ${speech.debugDescription}'),
                     Text(
                       'Q${controller.index + 1}/${controller.questions.length} '
-                      '${cur?.id ?? '-'} (${cur?.name ?? '-'})  phase=${controller.phase.name}',
+                      '${cur?.id ?? '-'} (${cur?.name ?? '-'})  phase=${controller.phase.name}'
+                      '  hint=${controller.hintStep.name}',
                     ),
                     for (final r in recent) Text(r.toString()),
                     if (fake != null)

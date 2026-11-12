@@ -1,16 +1,23 @@
+import 'dart:async';
+
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../app/app_config.dart';
 import '../app/app_services.dart';
+import '../content/line_keys.dart';
 import '../content/species.dart';
 import '../content/world_catalog.dart';
 import '../game/quiz_game.dart';
 import '../game/svg_picture_cache.dart';
+import '../progress/dex_progress.dart';
 import '../quiz/name_stage_controller.dart';
+import '../quiz/question_picker.dart';
 import '../services/speech/fake_speech_input.dart';
+import '../services/voice/voice_line.dart';
 import 'debug_overlay.dart';
 import 'mic_button.dart';
+import 'stamp_overlay.dart';
 
 /// 1단계 퀴즈 화면: Flame 장면 + 마이크 버튼(Flutter) + 개발자 오버레이(debug 전용).
 class QuizScreen extends StatefulWidget {
@@ -35,6 +42,9 @@ class _QuizScreenState extends State<QuizScreen> {
   late final NameStageController _controller;
   bool _overlay = AppConfig.debugOverlayInitiallyOn;
 
+  /// 스테이지 끝 도감 찍힘 연출(보상 2층).
+  _StampData? _stamp;
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +55,13 @@ class _QuizScreenState extends State<QuizScreen> {
       voice: widget.services.voice,
       speech: widget.services.speech,
       sfx: widget.services.sfx,
+      picker: QuestionPicker.dexAware(
+        isMet: (sp) => widget.services.progress.progress.isMet(
+          widget.spec.world.id,
+          sp.id,
+        ),
+      ),
+      onStageCleared: _onStageCleared,
       onFinished: () {
         if (mounted) Navigator.of(context).maybePop();
       },
@@ -61,6 +78,22 @@ class _QuizScreenState extends State<QuizScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _begin());
   }
 
+  /// 결과를 도감에 반영·저장하고, 맞힌 종이 도감 칸으로 날아가 찍히는 연출을 보여 준다.
+  Future<void> _onStageCleared(StageResult result) async {
+    final services = widget.services;
+    final worldId = widget.spec.world.id;
+    final before = {
+      for (final sp in widget.pool)
+        sp.id: services.progress.progress.tier(worldId, sp.id),
+    };
+    final changes = await services.progress.applyStage(result);
+    debugPrint('[stage] stamped $changes');
+    if (!mounted) return;
+    final done = Completer<void>();
+    setState(() => _stamp = _StampData(before, changes, done));
+    await done.future;
+  }
+
   Future<void> _begin() async {
     await _game.loaded;
     await _game.preload(widget.pool);
@@ -70,6 +103,8 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   void dispose() {
+    final stamp = _stamp;
+    if (stamp != null && !stamp.done.isCompleted) stamp.done.complete();
     _controller.dispose();
     _pictures.dispose();
     super.dispose();
@@ -108,6 +143,30 @@ class _QuizScreenState extends State<QuizScreen> {
               ),
             ),
           ),
+          if (_stamp case final stamp?)
+            Positioned.fill(
+              child: StampOverlay(
+                species: widget.pool,
+                before: stamp.before,
+                changes: stamp.changes,
+                onStamp: (c) {
+                  unawaited(widget.services.sfx.play(SfxNames.stamp));
+                  if (c.isNew) {
+                    unawaited(widget.services.sfx.play(SfxNames.unlock));
+                  }
+                },
+                onAllStamped: () => widget.services.voice.say(
+                  VoiceLine(
+                    stamp.changes.any((c) => c.isNew)
+                        ? LineKeys.rewardNewFriends
+                        : LineKeys.rewardDexStamped,
+                  ),
+                ),
+                onDone: () {
+                  if (!stamp.done.isCompleted) stamp.done.complete();
+                },
+              ),
+            ),
           if (AppConfig.debugOverlayAvailable) ...[
             // 오른쪽 위 구석을 길게 누르면 개발자 오버레이 켜기/끄기 (debug 빌드 전용).
             Positioned(
@@ -130,4 +189,11 @@ class _QuizScreenState extends State<QuizScreen> {
       ),
     );
   }
+}
+
+class _StampData {
+  _StampData(this.before, this.changes, this.done);
+  final Map<String, DexTier> before;
+  final List<StampChange> changes;
+  final Completer<void> done;
 }

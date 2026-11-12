@@ -4,7 +4,7 @@
 앱보다 먼저 확인하려고 **내부 테스트용 웹 빌드**를 둔다: https://ul-dong.github.io/voicedex/ (출시 대상 아님, 아래 "웹 버전" 참고).
 사양의 기준 문서는 `docs/MASTER_PROMPT.md`, 그림체는 `docs/STYLE_GUIDE.md`.
 
-현재 범위: **동물 월드 1단계(색칠 그림 보고 이름 말하기)** 만 동작한다. 2·3단계, 도감, 과금, 페어런탈 게이트는 아직 없다.
+현재 범위: 메인 화면, **동물 월드 1단계(색칠 그림 보고 이름 말하기)**, 도감(보상 2·3층, 기기 로컬 저장). 2·3단계 퀴즈, 과금, 페어런탈 게이트는 아직 없다(도감의 테두리·금테 표시는 데이터·화면은 있고 개발자 모드로 확인).
 
 ## 실행
 
@@ -49,6 +49,10 @@ flutter build apk --debug         # Android
 | `…/voicedex/?debug=1` | 개발자 오버레이 켜짐(인식된 문자열·판정). 오른쪽 위 구석 길게 눌러 끄기/켜기 |
 | `…/voicedex/?debug=1&fake=1` | 가짜 음성 입력(오버레이의 `correct / wrong / none / error` 버튼) |
 | `…/voicedex/?debug=1&script=none,wrong,correct,correct,correct,correct,correct,correct` | 가짜 음성 대본(자동 진행) |
+| `…/voicedex/?debug=1&dex=empty\|some\|mixed\|border\|gold` | 시작할 때 도감 상태를 강제로 바꿈(저장됨). debug 빌드는 `--dart-define=VOICEDEX_DEX=mixed` |
+| `…/voicedex/?debug=1&overlay=0` | 개발자 패널을 꺼진 채 시작(아이 화면 그대로 확인). 오른쪽 위 구석 길게 눌러 켜기 |
+
+도감 화면의 개발자 패널(debug 빌드 / `?debug=1`, 오른쪽 위 길게 누르기): `empty / some / mixed / border / gold` 프리셋, `edit`(켜면 칸을 누를 때마다 그림자→칸→테두리→금테 순으로 바뀜).
 
 ### 브라우저별 지원 (조사 결과, 2026-11)
 
@@ -62,9 +66,10 @@ flutter build apk --debug         # Android
 
 웹 대응 구현:
 - `lib/services/speech/device_speech_input.dart`: 웹에서 언어 코드 `ko-KR`, 지원 여부 확인, 재생 버튼 탭(사용자 제스처) 때 `getUserMedia`로 마이크 권한을 먼저 받는다(거부·마이크 없음 → "사용 불가" → 마이크 버튼 기다림, 12초 응답 없으면 그냥 진행). 웹 오류 코드(`no-speech`, `not-allowed`, `audio-capture` 등)를 무응답/사용 불가로 나눈다. 웹 플러그인은 최종 결과 대신 듣기 시간이 끝난 뒤 결과를 넘겨준다.
-- `lib/services/voice/web_voice_output_web.dart`: 웹 TTS는 `flutter_tts` 대신 `speechSynthesis`를 직접 쓴다(`flutter_tts` 웹은 속도 단위가 달라 0.42가 매우 느리고, 중단·오류 때 완료를 알리지 않아 진행이 멈출 수 있음). 끝·오류·안전 시간 중 먼저 오는 것에 돌아온다. 기기 내(localService) 한국어 음성을 우선 고른다.
+- 목소리: 웹도 앱과 같은 `PackVoiceOutput`(녹음 MP3 우선 → 없으면 TTS)을 쓴다. 녹음·효과음은 `lib/platform/web_audio_web.dart`의 `WebAudioEngine`(Web Audio, 첫 터치에 잠금 해제, fetch→decode→재생, 효과음은 별도 gain)으로 튼다.
+- `lib/services/voice/web_tts_speaker_web.dart`: 녹음이 없는 문장의 웹 TTS는 `flutter_tts` 대신 `speechSynthesis`를 직접 쓴다(`flutter_tts` 웹은 속도 단위가 달라 매우 느리고, 중단·오류 때 완료를 알리지 않아 진행이 멈출 수 있음). 끝·오류·안전 시간 중 먼저 오는 것에 돌아온다. 기기 내(localService) 한국어 음성을 우선 고른다.
 - `web/index.html`: 첫 탭(=재생 버튼)에서 소리 없는 빈 문장을 말해 iOS 사파리의 TTS 잠금을 푼다.
-- `lib/platform/web_audio*.dart`: 웹 전용 코드는 조건부 import로 분리(앱 빌드·테스트에 영향 없음).
+- `lib/platform/web_audio*.dart`, `web_tts_speaker*.dart`: 웹 전용 코드는 조건부 import로 분리(앱 빌드·테스트에 영향 없음).
 
 ## 구조
 
@@ -77,41 +82,51 @@ lib/
   content/world_catalog.dart     월드(동물→탈것→공룡) / 단계 종류(StageKind) / StageSpec(6문항)
   content/content_repository.dart  월드 데이터 로드
   quiz/answer_judge.dart         정답 판정기(정규화 + 부분 일치, 인식 실패 vs 오답)
-  quiz/question_picker.dart      출제기(중복 없는 가중치 추출, SpeciesWeight 함수 자리)
+  content/line_template.dart     대사 템플릿 규칙({name}, {hint}, {feature}, {name:이/가} 조사) — 녹음 대본 펼치기
+  content/line_keys.dart         새 대사 키(LineKeys), 효과음 이름(SfxNames)
+  progress/dex_progress.dart     도감 진행 모델·규칙(2층 열림, 3층 단계 표시, 힌트 문항 제외)
+  progress/progress_store.dart   진행 저장(shared_preferences, 웹은 localStorage), ProgressController
+  quiz/hint_ladder.dart          단계식 힌트 상태(특징 → 앞글자 → 따라 말하기)
+  quiz/question_picker.dart      출제기(중복 없는 가중치 추출 + 도감 미보유 우선 보장 QuestionPicker.dexAware)
   quiz/stage_view.dart           화면 쪽 인터페이스(그림 표시·정답 연출·축하)
   quiz/name_stage_controller.dart  "그림 보고 이름 말하기" 진행기(1단계, 3단계에서 재사용 예정)
-  services/voice/                VoiceOutput 인터페이스, TTS 구현, 대사 키(VoiceKeys)·대사 표(VoiceLines)
+  services/voice/                VoiceOutput 인터페이스, PackVoiceOutput(녹음 팩 우선 → TTS 대체), 녹음 재생기·TTS 구현, 대사 키(VoiceKeys)·대사 표(VoiceLines) — 자세한 구조는 docs/VOICE.md
   services/speech/               SpeechInput 인터페이스, 기기 인식기 구현, 디버그용 가짜 입력
-  services/sfx/                  정답 효과음 자리(현재 없음 → TTS로 이름을 말함)
+  services/sfx/                  효과음(SoundEffects 인터페이스, AudioSoundEffects: 앱 audioplayers / 웹 Web Audio)
   game/quiz_game.dart            Flame 장면(QuizStageView 구현): 등장·정답 튀어오름·축하
   game/components/               SVG 그림 컴포넌트, 반짝이·색종이 파티클
   game/svg_picture_cache.dart    SVG 파싱 캐시
   game/svg_clip_fix.dart         flutter_svg clipPath 버그 우회(아래 참고)
-  ui/                            시작 화면, 퀴즈 화면(GameWidget + 마이크 버튼), 개발자 오버레이
-  platform/web_audio*.dart       웹 전용: 음성 기능 지원 확인, 마이크 권한(조건부 import)
+  ui/                            시작 화면, 메인 화면(home_screen), 도감(dex_screen, dex_grid), 스테이지 끝 도감 찍힘(stamp_overlay), 퀴즈 화면, 개발자 오버레이
+  platform/web_audio*.dart       웹 전용: 음성 기능 지원 확인, 마이크 권한, Web Audio 재생(조건부 import)
 web/                             웹 진입점(index.html: iOS 사파리 TTS 잠금 해제)
 tools/deploy_web.sh              웹 빌드 → gh-pages 배포
-assets/data/animals.json         동물 12종: id, 이름, 정답 후보, 유사 발음, 첫 음절 힌트, 그림 경로
-assets/data/voice_lines_ko.json  대사 키 → 문장
-test/                            판정기·데이터·출제기·진행기·대사·SVG 렌더 테스트
+tools/voice/                     녹음 음성 생성(gen_voice.command 증분 녹음, MeloTTS) — docs/VOICE.md
+tools/generate_sfx.py            효과음 합성
+assets/data/animals.json         동물 12종: id, 이름, 정답 후보, 유사 발음, 앞글자 힌트(hint), 특징 힌트(feature_hint), 그림 경로
+assets/data/voice_lines_ko.json  대사 키 → 문장 틀
+assets/voice/                    녹음 음성 팩: manifest.json(문장 → vNNNN.mp3) + mp3
+assets/audio/sfx/                효과음 wav
+test/                            판정기·데이터·출제기·진행기·대사·힌트·도감 진행·녹음 팩·SVG 렌더 테스트
 ```
 
 그림은 원본 폴더 `assets/draft_silhouettes/cute/`를 pubspec에 그대로 등록해 쓴다(복사하지 않음, 폴더 구조 유지).
 
 ### 진행 흐름 (1단계)
 
-시작 화면(재생 버튼) → 문제마다: 그림 등장 → "이 동물은 누구일까?" → 자동 듣기(마이크 빨갛게, 퍼지는 고리 + 음량 고리) → 판정
-- 정답: 그림이 웅크렸다 튀어오르며 흔들림 + 반짝이, 효과음 자리(현재 없음) 대신 "맞아! 코끼리!" → 다음 문제
-- 오답: 첫 음절 힌트 "코..." → 다시 듣기 (횟수 제한 없음)
+시작 화면(재생 버튼, 마이크 권한) → 메인 화면("안녕! 오늘은 누구를 만나 볼까?") → 동물 나라 입구 → 문제마다: 그림 등장 → "이 동물은 누구일까?" → 자동 듣기(마이크 빨갛게, 퍼지는 고리 + 음량 고리) → 판정
+- 정답: 그림이 웅크렸다 튀어오르며 흔들림 + 반짝이 + 정답 효과음 + "맞아! 코끼리!" → 다음 문제
+- 오답(단계식 힌트, 횟수 제한 없음): 1번째 특징 "코가 아주아주 길어!" → 2번째 앞글자 "코..." → 3번째부터 "코끼리! 따라 해 볼까?" → 따라 말하면 정답("그래, 코끼리! 잘 따라 했어!")
 - 인식 실패(무응답·결과 없음·에러): "다시 말해줄래?" → 다시 듣기. 오답으로 세지 않고 힌트도 없음. **3번 이어지면 자동 듣기를 멈추고** 마이크 버튼이 주황색으로 숨쉬며 누르기를 기다린다(아이가 자리를 떴을 때 무한 반복 방지). 권한 없음·마이크 없음은 바로 기다림 상태.
 - 그림을 누르면 문제를 다시 말하고 다시 듣는다. 마이크를 누르면 바로 다시 듣는다.
-- 6문항 후: 만난 6종이 두 줄로 서서 차례로 콩콩 뛰고 색종이 + "와, 다 맞혔어! 정말 잘했어!" → 시작 화면.
+- 6문항 후: 만난 6종이 두 줄로 서서 차례로 콩콩 뛰고 색종이 + "와, 다 맞혔어! 정말 잘했어!" → 도감 12칸이 나타나고 맞힌 종이 차례로 칸으로 날아가 찍힘(새 종은 크게 + 반짝, "새 친구가 도감에 들어왔어!") → 메인 화면.
+- 출제: 도감 미보유 종 우선(스테이지마다 최소 2종 보장) → 빈 도감에서 최대 4스테이지면 12종이 다 찬다.
 
 ### 2·3단계를 붙일 자리
 
 - `StageKind.matchShadow`, `StageKind.nameFromShadow`가 정의되어 있고, `NameStageController`는 질문 대사 키만 바꾸면 3단계에 재사용할 수 있다(`_askKey`). 그림자 그림 경로는 이미 `shadow_image`에 있다.
 - 탈것·공룡 월드는 `assets/data/vehicles.json` 등을 같은 형식으로 만들고 `WorldCatalog`에 추가한다(공룡 단축형은 `answers`에 넣는다).
-- 도감 미보유 가중치: `QuestionPicker(weight: ...)`에 미보유 종이면 큰 값을 돌려주는 함수를 넘긴다.
+- 2·3단계 스테이지 결과도 같은 `StageResult`(world, kind, 문항별 힌트 사용 여부)로 `ProgressController.applyStage`에 넘기면 테두리·금테가 붙는다.
 
 ## 정답 판정
 
@@ -144,6 +159,7 @@ test/                            판정기·데이터·출제기·진행기·대
 - 출시 전 결정 필요: 기기 내 인식이 없는 Android 기기에서 (a) 기본 인식기 사용을 허용할지, (b) 막고 음성 기능을 끌지. 현재 코드는 (a)다. (b)로 하려면 플러그인이 기기 내 인식 가능 여부를 노출하지 않으므로 소형 플랫폼 채널(`SpeechRecognizer.isOnDeviceRecognitionAvailable`)을 추가해야 한다.
 
 ### TTS
+- 안내 목소리는 앱에 들어 있는 녹음 파일이 우선이고, 녹음이 없는 문장만 TTS로 말한다.
 - `flutter_tts 4.2.5` → iOS `AVSpeechSynthesizer`, Android 기본 TTS 엔진. 기기 내 합성이며 앱이 보내는 데이터는 없다. (Android 엔진이 네트워크 음성을 쓰도록 사용자가 설정한 경우는 엔진 동작이다.)
 
 ### 저장
@@ -158,16 +174,16 @@ test/                            판정기·데이터·출제기·진행기·대
 | 앱 표시 이름 | 말하는 도감 | `ios/Runner/Info.plist`의 `CFBundleDisplayName`, `android/app/src/main/AndroidManifest.xml`의 `android:label`, `lib/ui/voicedex_app.dart`의 `title` |
 | 권한 문구 | 부모 대상 한국어 | `ios/Runner/Info.plist`의 `NSMicrophoneUsageDescription`, `NSSpeechRecognitionUsageDescription` |
 
-## 녹음 음성으로 교체하는 방법
+## 목소리·효과음
 
-1. 대사 키는 `lib/services/voice/voice_line.dart`의 `VoiceKeys`, 문장은 `assets/data/voice_lines_ko.json`.
-   종에 따라 달라지는 대사(`correct.say_name`, `hint.first_syllable`)는 `VoiceLine.species`가 붙어 온다.
-2. 녹음 파일 규칙 예: `assets/voice/<key>.m4a`, 종별 대사는 `assets/voice/<key>.<species id>.m4a` (예: `hint.first_syllable.elephant.m4a`).
-3. 오디오 재생 패키지(예: `audioplayers` / `just_audio`)를 `flutter pub add`로 추가하고 `VoiceOutput`을 구현하는 `RecordedVoiceOutput`을 만든다: `say()`는 파일을 찾아 끝까지 재생 후 반환, `stop()`은 즉시 중단. 파일이 없으면 `TtsVoiceOutput`으로 넘기는 방식이면 점진 교체가 된다.
-4. `lib/app/app_services.dart`에서 `TtsVoiceOutput` 대신 새 구현을 넣는다.
-5. iOS에서 녹음 재생도 음성 인식과 같은 오디오 세션(playAndRecord + defaultToSpeaker)을 쓰도록 맞출 것(듣기 후 소리가 작아지는 문제 방지).
+자세한 내용은 `docs/VOICE.md`.
 
-정답 효과음도 같은 방식: `SoundEffects` 인터페이스(`lib/services/sfx/sound_effects.dart`)를 구현해 `playCorrect`가 true를 돌려주면 이름 TTS 대신 효과음만 난다.
+- 안내 목소리는 `PackVoiceOutput`이 맡는다: 대사 → 통문장(`VoiceLines.render`, `LineTemplate`) → `assets/voice/manifest.json`에서 **문장 그대로** 찾아 녹음 MP3를 튼다. 녹음이 없거나 재생에 실패하면 같은 문장을 기기 TTS로 말한다(앱 `flutter_tts`, 웹 `speechSynthesis`). 새로 말하면 앞의 말은 끊긴다.
+- 녹음은 무료 음성 모델 MeloTTS(한국어)로 만들어 어린이 느낌으로 처리한 통문장이다(문장 하나 = 녹음 하나).
+- 대사를 추가·수정한 뒤 `tools/voice/gen_voice.command`를 돌리면 **새 문장만** 녹음해 매니페스트에 합친다(증분, 번호는 영구). 목소리 설정을 바꿨을 때만 `--all`. 음성 모델 venv는 저장소 밖(`~/alokdev/melo-venv`)에 둔다.
+- `flutter test`의 `test/voice_pack_test.dart`가 녹음이 빠진 문장을 알려 준다.
+- 효과음(`assets/audio/sfx/*.wav`, `tools/generate_sfx.py`로 합성)은 목소리와 다른 플레이어로 겹쳐 틀어 목소리를 끊지 않는다.
+- iOS는 녹음 재생·TTS·음성 인식이 같은 오디오 세션(playAndRecord + defaultToSpeaker)을 쓴다(`audio_session.dart`).
 
 ## 그림(SVG) 렌더링
 
@@ -182,4 +198,3 @@ test/                            판정기·데이터·출제기·진행기·대
 - **`flutter analyze`가 이 폴더에서 분석 서버 오류로 죽는다**(경로의 한글·공백 때문에 LSP 메시지 길이 계산이 틀림: `FormatException: Unterminated string`). `dart analyze`는 정상 동작하며 경고 0이다. ASCII 경로로 복사하면 `flutter analyze`도 동작한다.
 - iOS 시뮬레이터는 이 Mac 환경에서 마이크 입력이 없어(`Not enough available inputs`) 실제 음성 인식을 확인할 수 없었다 → 가짜 음성 입력으로 흐름을 검증했다.
 - `flutter_tts`는 iOS Swift Package Manager 미지원(CocoaPods로 빌드됨), Android는 Kotlin Gradle Plugin 경고가 난다. 둘 다 현재 빌드는 성공.
-- 곰은 이름이 한 음절이라 첫 음절 힌트("곰...")가 정답 자체가 된다. 데이터(`hint`)만 바꾸면 되므로 방식 결정 필요.

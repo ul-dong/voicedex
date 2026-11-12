@@ -39,6 +39,8 @@ dependencies:
   speech_to_text: ^7.5.0
   flutter_tts: ^4.2.5
   web: ^1.1.2
+  audioplayers: ^6.8.1
+  shared_preferences: ^2.5.6
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +68,9 @@ flutter:
   assets:
     - assets/data/
     - assets/draft_silhouettes/cute/
+    # 녹음 목소리(통문장 mp3 + manifest.json, tools/voice/gen_voice.command) · 효과음(tools/generate_sfx.py). docs/VOICE.md
+    - assets/voice/
+    - assets/audio/sfx/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

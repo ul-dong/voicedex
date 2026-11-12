@@ -19,6 +19,8 @@ class WorldDef {
     required this.dataAsset,
     required this.free,
     this.stages = StageKind.values,
+    this.coverSpecies = const [],
+    this.color = 0xFF8DBE8A,
   });
 
   final String id;
@@ -30,6 +32,12 @@ class WorldDef {
   final bool free;
 
   final List<StageKind> stages;
+
+  /// 메인 화면 입구 그림에 세울 종 id(앞에서부터 가운데·왼쪽·오른쪽).
+  final List<String> coverSpecies;
+
+  /// 입구 그림 바탕색(ARGB).
+  final int color;
 }
 
 /// 스테이지 하나의 출제 규칙.
@@ -52,6 +60,8 @@ class WorldCatalog {
     id: 'animals',
     dataAsset: 'assets/data/animals.json',
     free: true,
+    coverSpecies: ['elephant', 'giraffe', 'lion'],
+    color: 0xFF9ED39A,
   );
 
   // 탈것·공룡 월드는 데이터와 그림이 준비되면 같은 형식으로 추가한다.
@@ -59,4 +69,11 @@ class WorldCatalog {
   // static const dinosaurs = WorldDef(id: 'dinosaurs', dataAsset: 'assets/data/dinosaurs.json', free: false);
 
   static const List<WorldDef> ordered = [animals];
+
+  /// 아이 화면(메인)에 보이는 월드. 잠긴/유료 월드는 아이 화면에 보이지 않는다(절대 제약).
+  /// 구매가 생기면 [unlocked]에 산 월드 id를 넘긴다(구매 화면은 페어런탈 게이트 뒤, 아이 화면 밖).
+  static List<WorldDef> visibleToChild({Set<String> unlocked = const {}}) => [
+    for (final w in ordered)
+      if (w.free || unlocked.contains(w.id)) w,
+  ];
 }
