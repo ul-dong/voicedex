@@ -1,0 +1,226 @@
+{
+  "world": "animals",
+  "version": 1,
+  "species": [
+    {
+      "id": "elephant",
+      "no": 1,
+      "name": "코끼리",
+      "answers": [
+        "코끼리",
+        "코끼"
+      ],
+      "similar": [
+        "꼬끼리",
+        "고끼리",
+        "코기리",
+        "코끼니",
+        "코키리",
+        "꼬끼"
+      ],
+      "hint": "코",
+      "color_image": "assets/draft_silhouettes/cute/elephant_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/elephant_shadow.svg"
+    },
+    {
+      "id": "giraffe",
+      "no": 2,
+      "name": "기린",
+      "answers": [
+        "기린"
+      ],
+      "similar": [
+        "기림",
+        "기릴",
+        "키린",
+        "길인",
+        "기링"
+      ],
+      "hint": "기",
+      "color_image": "assets/draft_silhouettes/cute/giraffe_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/giraffe_shadow.svg"
+    },
+    {
+      "id": "lion",
+      "no": 3,
+      "name": "사자",
+      "answers": [
+        "사자"
+      ],
+      "similar": [
+        "싸자",
+        "사잔",
+        "사짜"
+      ],
+      "hint": "사",
+      "color_image": "assets/draft_silhouettes/cute/lion_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/lion_shadow.svg"
+    },
+    {
+      "id": "rabbit",
+      "no": 4,
+      "name": "토끼",
+      "answers": [
+        "토끼",
+        "토깽이"
+      ],
+      "similar": [
+        "토기",
+        "도끼",
+        "토키",
+        "또끼"
+      ],
+      "hint": "토",
+      "color_image": "assets/draft_silhouettes/cute/rabbit_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/rabbit_shadow.svg"
+    },
+    {
+      "id": "penguin",
+      "no": 5,
+      "name": "펭귄",
+      "answers": [
+        "펭귄",
+        "펭긴"
+      ],
+      "similar": [
+        "팽귄",
+        "팽긴",
+        "펜긴",
+        "펭귀",
+        "뱅귄",
+        "평귄"
+      ],
+      "hint": "펭",
+      "color_image": "assets/draft_silhouettes/cute/penguin_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/penguin_shadow.svg"
+    },
+    {
+      "id": "bear",
+      "no": 6,
+      "name": "곰",
+      "answers": [
+        "곰",
+        "곰돌이"
+      ],
+      "similar": [
+        "공",
+        "꼼",
+        "곪"
+      ],
+      "hint": "곰",
+      "color_image": "assets/draft_silhouettes/cute/bear_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/bear_shadow.svg"
+    },
+    {
+      "id": "hippo",
+      "no": 7,
+      "name": "하마",
+      "answers": [
+        "하마"
+      ],
+      "similar": [
+        "하만",
+        "하망",
+        "화마"
+      ],
+      "hint": "하",
+      "color_image": "assets/draft_silhouettes/cute/hippo_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/hippo_shadow.svg"
+    },
+    {
+      "id": "monkey",
+      "no": 8,
+      "name": "원숭이",
+      "answers": [
+        "원숭이",
+        "원숭"
+      ],
+      "similar": [
+        "원순이",
+        "원슝이",
+        "원숭히",
+        "원순",
+        "원슝",
+        "운숭이"
+      ],
+      "hint": "원",
+      "color_image": "assets/draft_silhouettes/cute/monkey_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/monkey_shadow.svg"
+    },
+    {
+      "id": "crocodile",
+      "no": 9,
+      "name": "악어",
+      "answers": [
+        "악어"
+      ],
+      "similar": [
+        "아거",
+        "악오",
+        "앗어",
+        "아커",
+        "악거"
+      ],
+      "hint": "악",
+      "color_image": "assets/draft_silhouettes/cute/crocodile_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/crocodile_shadow.svg"
+    },
+    {
+      "id": "rhino",
+      "no": 10,
+      "name": "코뿔소",
+      "answers": [
+        "코뿔소",
+        "코뿔"
+      ],
+      "similar": [
+        "코불소",
+        "고뿔소",
+        "코뿔쏘",
+        "코블소",
+        "코부소",
+        "코볼소"
+      ],
+      "hint": "코",
+      "color_image": "assets/draft_silhouettes/cute/rhino_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/rhino_shadow.svg"
+    },
+    {
+      "id": "kangaroo",
+      "no": 11,
+      "name": "캥거루",
+      "answers": [
+        "캥거루",
+        "캥거"
+      ],
+      "similar": [
+        "캥가루",
+        "캉가루",
+        "갱거루",
+        "컹거루",
+        "캥구루",
+        "캥거로"
+      ],
+      "hint": "캥",
+      "color_image": "assets/draft_silhouettes/cute/kangaroo_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/kangaroo_shadow.svg"
+    },
+    {
+      "id": "camel",
+      "no": 12,
+      "name": "낙타",
+      "answers": [
+        "낙타"
+      ],
+      "similar": [
+        "낙다",
+        "락타",
+        "낙따",
+        "낚타"
+      ],
+      "hint": "낙",
+      "color_image": "assets/draft_silhouettes/cute/camel_color.svg",
+      "shadow_image": "assets/draft_silhouettes/cute/camel_shadow.svg"
+    }
+  ]
+}
