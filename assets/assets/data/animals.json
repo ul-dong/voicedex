@@ -1,6 +1,6 @@
 {
   "world": "animals",
-  "version": 1,
+  "version": 2,
   "species": [
     {
       "id": "elephant",
@@ -19,6 +19,7 @@
         "꼬끼"
       ],
       "hint": "코",
+      "feature_hint": "코가 아주아주 길어!",
       "color_image": "assets/draft_silhouettes/cute/elephant_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/elephant_shadow.svg"
     },
@@ -37,6 +38,7 @@
         "기링"
       ],
       "hint": "기",
+      "feature_hint": "목이 아주 길어!",
       "color_image": "assets/draft_silhouettes/cute/giraffe_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/giraffe_shadow.svg"
     },
@@ -53,6 +55,7 @@
         "사짜"
       ],
       "hint": "사",
+      "feature_hint": "얼굴 둘레에 북슬북슬 갈기가 있어!",
       "color_image": "assets/draft_silhouettes/cute/lion_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/lion_shadow.svg"
     },
@@ -71,6 +74,7 @@
         "또끼"
       ],
       "hint": "토",
+      "feature_hint": "귀가 쫑긋 길어!",
       "color_image": "assets/draft_silhouettes/cute/rabbit_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/rabbit_shadow.svg"
     },
@@ -91,6 +95,7 @@
         "평귄"
       ],
       "hint": "펭",
+      "feature_hint": "똑바로 서 있고 날개가 짧아!",
       "color_image": "assets/draft_silhouettes/cute/penguin_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/penguin_shadow.svg"
     },
@@ -107,7 +112,8 @@
         "꼼",
         "곪"
       ],
-      "hint": "곰",
+      "hint": "고",
+      "feature_hint": "등이 동글동글하고 목이 짧아!",
       "color_image": "assets/draft_silhouettes/cute/bear_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/bear_shadow.svg"
     },
@@ -124,6 +130,7 @@
         "화마"
       ],
       "hint": "하",
+      "feature_hint": "입이 아주 크고 몸이 통통해!",
       "color_image": "assets/draft_silhouettes/cute/hippo_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/hippo_shadow.svg"
     },
@@ -144,6 +151,7 @@
         "운숭이"
       ],
       "hint": "원",
+      "feature_hint": "팔이 길고 꼬리도 길어!",
       "color_image": "assets/draft_silhouettes/cute/monkey_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/monkey_shadow.svg"
     },
@@ -162,6 +170,7 @@
         "악거"
       ],
       "hint": "악",
+      "feature_hint": "몸이 낮고 아주 길어!",
       "color_image": "assets/draft_silhouettes/cute/crocodile_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/crocodile_shadow.svg"
     },
@@ -182,6 +191,7 @@
         "코볼소"
       ],
       "hint": "코",
+      "feature_hint": "코 위에 뿔이 있어!",
       "color_image": "assets/draft_silhouettes/cute/rhino_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/rhino_shadow.svg"
     },
@@ -202,6 +212,7 @@
         "캥거로"
       ],
       "hint": "캥",
+      "feature_hint": "꼬리가 굵고 뒷다리가 커!",
       "color_image": "assets/draft_silhouettes/cute/kangaroo_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/kangaroo_shadow.svg"
     },
@@ -219,6 +230,7 @@
         "낚타"
       ],
       "hint": "낙",
+      "feature_hint": "등에 혹이 있어!",
       "color_image": "assets/draft_silhouettes/cute/camel_color.svg",
       "shadow_image": "assets/draft_silhouettes/cute/camel_shadow.svg"
     }

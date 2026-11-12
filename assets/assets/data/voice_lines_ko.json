@@ -1,10 +1,30 @@
 {
   "locale": "ko-KR",
+  "template_rules": {
+    "about": "lines의 문장 안 {…} 자리는 종(species)마다 채워 통문장으로 펼친다. 녹음은 펼친 통문장 하나씩(키 + 종 id) 한다. 구현: lib/content/line_template.dart (LineTemplate.expand).",
+    "{name}": "종 이름(animals.json name). 예: 코끼리",
+    "{hint}": "앞글자 힌트(animals.json hint). 보통 이름 첫 글자, 한 음절 이름은 받침을 뺀 소리(곰 → 고). 예: 코",
+    "{feature}": "특징 힌트 한 문장(animals.json feature_hint). 예: 코가 아주아주 길어!",
+    "{name:A/B}": "이름 + 조사. 이름 마지막 글자에 받침이 있으면 A, 없으면 B. 예: {name:이/가} → 곰이 / 코끼리가, {name:이야/야} → 곰이야 / 코끼리야, {name:은/는}, {name:을/를}, {name:과/와}, {name:아/야}, {name:이에요/예요}",
+    "{name:으로/로}": "예외: 받침이 없거나 받침이 ㄹ이면 로, 그 밖의 받침이면 으로",
+    "종이 없는 키": "{…} 자리가 없는 문장은 종과 상관없이 하나만 녹음한다"
+  },
   "lines": {
     "ask.name_from_color": "이 동물은 누구일까?",
     "listen.retry": "다시 말해줄래?",
+    "hint.feature": "{feature}",
     "hint.first_syllable": "{hint}...",
+    "hint.say_and_repeat": "{name}! 따라 해 볼까?",
     "correct.say_name": "맞아! {name}!",
-    "stage.clear": "와, 다 맞혔어! 정말 잘했어!"
+    "correct.after_repeat": "그래, {name}! 잘 따라 했어!",
+    "stage.clear": "와, 다 맞혔어! 정말 잘했어!",
+    "reward.new_friends": "새 친구가 도감에 들어왔어!",
+    "reward.dex_stamped": "도감에 콕콕 찍었어!",
+    "home.welcome": "안녕! 오늘은 누구를 만나 볼까?",
+    "home.world.animals": "동물 나라!",
+    "home.dex": "내 도감!",
+    "dex.unknown": "누구일까? 곧 만나러 가자!",
+    "dex.known": "{name:이야/야}!",
+    "dex.home": "집으로 가자!"
   }
 }
